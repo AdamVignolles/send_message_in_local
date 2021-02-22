@@ -1,20 +1,42 @@
-import paho.mqtt.client as mqtt #import the client1
+import paho.mqtt.client as mqtt
 import time
-############
+
+all_chanel = [
+    'message',
+    'famille'
+]
+
 def on_message(client, userdata, message):
-    print("message received " ,str(message.payload.decode("utf-8")))
+    print("\nmessage received " ,str(message.payload.decode("utf-8")), "\n")
+
 broker_address="192.168.1.91"
-#broker_address="iot.eclipse.org"
+
 print("creating new instance")
-client = mqtt.Client("P1") #create new instance
-client.on_message=on_message #attach function to callback
+name = input("entre votre nom : ")
+client = mqtt.Client(name)
+
 print("connecting to broker")
-client.connect(broker_address, 5050) #connect to broker
-client.loop_start() #start the loop
-while True:
-    print("Subscribing to topic","message")
-    client.subscribe("message")
-    print("Publishing message to topic","message")
-    entre = input()
-    client.publish("message",entre)
-    time.sleep(4) # wait
+client.on_message=on_message
+
+client.connect(broker_address, 5050)
+
+client.loop_start()
+run = True
+while run:
+    suite = input("1 pour envoier un message \n2 pour quitter \n-> ")
+    if suite == '1':
+
+        print("choissier le chanel sur lequel vous vouler discuter")
+        chanel = input(f"{all_chanel[0]} \n{all_chanel[1]} \n->")
+        client.subscribe(chanel)
+
+        print("Publishing message to topic",chanel)
+        entre = input("entre votre message : ")
+        client.publish(chanel,entre)
+
+        time.sleep(4)
+        client.on_message=on_message
+    elif suite == '2':
+        client.disconnect()
+        client.loop_stop()
+        run = False
